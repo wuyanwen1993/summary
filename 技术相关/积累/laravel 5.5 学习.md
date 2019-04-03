@@ -13,20 +13,9 @@
 | vagrant destroy   | 删除 vagrant                                |
 
 
-
-
-
-
-
-
-
-
-
 ## Artisan 命令
 
 是laravel 提供的CLI(命令行接口)
-
-
 
 | php artisan key:generate     | 生成 App Key     |
 | ---------------------------- | ---------------- |
