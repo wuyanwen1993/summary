@@ -3,7 +3,7 @@
 sudo mkdir /usr/local/software
 ```
 
-# nginx 安装
+# nginx 安装 (nginx 1.14)
 ## 安装依赖
 ```
 apt-get install gcc automake autoconf make
@@ -69,12 +69,107 @@ sudo vim /etc/profile
 ```
 
 
-# 安装mysql (为省时间，mysql采用 apt安装)
+# 安装mysql (二进制安装)
+[mysql官方二进制安装教程](https://dev.mysql.com/doc/refman/8.0/en/binary-installation.html)
+[参考资料](https://blog.csdn.net/shareye1992/article/details/83586842)
+
+## 首先讲一下如何干净的卸载 mysql
+之前是通过 apt 安装，现在想要手动编译安装， 如果干净卸载？如下：
 ```
-sudo apt install mysql-server
+sudo apt purge mysql-*
+sudo rm -rf /etc/mysql/ /var/lib/mysql
+sudo apt autoremove
+sudo apt autoclean
 ```
 
-# 安装 php
+## 安装依赖(如果编译安装)
+```
+sudo apt install gcc g++ libxml2 libxml2-dev libssl-dev curl libcurl4-openssl-dev libgd-dev
+sudo apt install numactl
+sudo apt install libaio-dev
+sudo apt install cmake
+```
+注意： MySQL8.0需要用gcc的版本为 5.3以上
+
+
+# 下载二进制文件 解压缩并移动
+```
+sudo wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.15-linux-glibc2.12-x86_64.tar.xz
+sudo tar xvjf mysql-8.0.15-linux-glibc2.12-x86_64.tar.xz
+sudo mv mysql-8.0.15-linux-glibc2.12-x86_64 /usr/local/mysql
+```
+
+
+## 添加mysql 用户和组并授予权限
+```
+groupadd mysql
+useradd -r -g mysql -s /bin/false mysql
+cd /usr/local
+cd mysql
+mkdir mysql-files
+chown mysql:mysql mysql-files
+chmod 750 mysql-filessudo groupadd mysql
+sudo useradd -g mysql mysql
+sudo passwd mysqgroupadd mysql
+useradd -r -g mysql -s /bin/false mysql
+cd /usr/local
+cd mysql
+mkdir mysql-files
+chown mysql:mysql mysql-files
+chmod 750 mysql-filesl
+``` 
+
+## 初始化操作
+```
+sudo bin/mysqld --initialize --user=mysql
+```
+执行后如下：
+```
+2019-04-04T03:45:20.586893Z 0 [System] [MY-013169] [Server] /usr/local/mysql/bin/mysqld (mysqld 8.0.15) initializing of server in progress as process 24728
+2019-04-04T03:45:24.869782Z 5 [Note] [MY-010454] [Server] A temporary password is generated for root@localhost: WfTks-:7RDis
+2019-04-04T03:45:26.660140Z 0 [System] [MY-013170] [Server] /usr/local/mysql/bin/mysqld (mysqld 8.0.15) initializing of server has completed
+```
+其中第二行 最后部分为 随机生成的密码
+
+## 复制服务文件
+```
+cp support-files/mysql.server /etc/init.d/mysql.server
+```
+
+## 配置开机服务
+```
+sudo vim /etc/rc.local
+# 增加mysql开启命令
+/usr/local/mysql/bin/mysqld_safe --user=mysql &
+```
+
+## 增加环境变量
+```
+sudo vim /etc/profile
+# 新增如下路径
+/usr/local/mysql/bin
+# 更新变量并生效
+source /etc/profile
+```
+
+## 开启 mysql 服务器
+```
+bin/mysqld_safe --user=mysql &
+```
+
+## 登录
+利用刚刚记录的密码登录
+```
+bin/mysql -uroot -p
+```
+
+## 修改root密码
+```
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456'
+``` 
+
+
+# 安装 php (php 7.2)
 ## 安装依赖
 apt-get install libxml2-dev gcc autoconf
 
